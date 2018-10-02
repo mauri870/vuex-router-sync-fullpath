@@ -1,30 +1,30 @@
 exports.sync = function (store, router, options) {
-  const moduleName = (options || {}).moduleName || 'route'
+  var moduleName = (options || {}).moduleName || 'route'
 
   store.registerModule(moduleName, {
     namespaced: true,
-    state: cloneRoute(router.currentRoute),
+    state: { fullPath: router.currentRoute.fullPath },
     mutations: {
-      'ROUTE_CHANGED' (state, transition) {
-        store.state[moduleName] = cloneRoute(transition.to, transition.from)
+      'ROUTE_CHANGED': function ROUTE_CHANGED (state, fullPath) {
+        store.state[moduleName] = { fullPath: fullPath }
       }
     }
   })
 
-  let isTimeTraveling = false
-  let currentPath
+  var isTimeTraveling = false
+  var currentPath
 
   // sync router on store change
-  const storeUnwatch = store.watch(
-    state => state[moduleName],
-    route => {
-      const { fullPath } = route
+  var storeUnwatch = store.watch(
+    function (state) { return state[moduleName]; },
+    function (route) {
+      var fullPath = route.fullPath;
       if (fullPath === currentPath) {
         return
       }
       if (currentPath != null) {
         isTimeTraveling = true
-        router.push(route)
+        router.push(fullPath)
       }
       currentPath = fullPath
     },
@@ -32,13 +32,13 @@ exports.sync = function (store, router, options) {
   )
 
   // sync store on router navigation
-  const afterEachUnHook = router.afterEach((to, from) => {
+  var afterEachUnHook = router.afterEach(function (to, from) {
     if (isTimeTraveling) {
       isTimeTraveling = false
       return
     }
     currentPath = to.fullPath
-    store.commit(moduleName + '/ROUTE_CHANGED', { to, from })
+    store.commit(moduleName + '/ROUTE_CHANGED', currentPath)
   })
 
   return function unsync () {
@@ -55,20 +55,4 @@ exports.sync = function (store, router, options) {
     // On unsync, unregister Module with store
     store.unregisterModule(moduleName)
   }
-}
-
-function cloneRoute (to, from) {
-  const clone = {
-    name: to.name,
-    path: to.path,
-    hash: to.hash,
-    query: to.query,
-    params: to.params,
-    fullPath: to.fullPath,
-    meta: to.meta
-  }
-  if (from) {
-    clone.from = cloneRoute(from)
-  }
-  return Object.freeze(clone)
 }

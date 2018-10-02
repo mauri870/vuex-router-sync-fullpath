@@ -1,19 +1,16 @@
-# vuex-router-sync [![CircleCI](https://circleci.com/gh/vuejs/vuex-router-sync.svg?style=svg)](https://circleci.com/gh/vuejs/vuex-router-sync)
+# vuex-router-sync-fullpath
 
-> Sync vue-router's current $route as part of vuex store's state.
+> Sync vue-router's current $route.fullPath as part of vuex store's state. This package differs from the original vue-router-sync because it not uses cyclic objects.
 
 ### Usage
 
 ``` bash
 # the latest version works only with vue-router >= 2.0
-npm install vuex-router-sync
-
-# for usage with vue-router < 2.0:
-npm install vuex-router-sync@2
+npm install vuex-router-sync-fullpath
 ```
 
 ``` js
-import { sync } from 'vuex-router-sync'
+import { sync } from 'vuex-router-sync-fullpath'
 import store from './vuex/store' // vuex store instance
 import router from './router' // vue-router instance
 
@@ -37,9 +34,7 @@ sync(store, router, { moduleName: 'RouteModule' } )
 - It adds a `route` module into the store, which contains the state representing the current route:
 
   ``` js
-  store.state.route.path   // current path (string)
-  store.state.route.params // current params (object)
-  store.state.route.query  // current query (object)
+  store.state.route.fullPath
   ```
 
 - When the router navigates to a new route, the store's state is updated.
